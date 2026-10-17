@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SUMO GUIDE｜相撲初心者のためのガイド</title>
+  <meta name="description" content="相撲に興味を持ち始めた方のための入門ガイド。勝敗の決まり方、土俵、番付のしくみ、本場所観戦の楽しみ方をわかりやすく紹介します。">
+
+  <!-- OGP（SNSでシェアされたときの表示情報） -->
+  <!-- 【仮値】og:url と og:image のドメイン（example.com）は公開URLが決まったら差し替えてください（フェーズ5） -->
+  <meta property="og:title" content="SUMO GUIDE｜相撲初心者のためのガイド">
+  <meta property="og:description" content="ぶつかる、一瞬。心が震える。基本ルール、番付、観戦の楽しみ方をわかりやすく紹介します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/">
+  <meta property="og:image" content="https://example.com/img/ogp.jpg">
+  <meta property="og:site_name" content="SUMO GUIDE">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へスキップ</a>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header__inner">
+      <a class="logo" href="#top">SUMO <span class="logo__accent">GUIDE</span></a>
+
+      <button class="menu-button" type="button" aria-controls="global-nav" aria-expanded="false" aria-label="メニューを開く">
+        <span class="menu-button__line" aria-hidden="true"></span>
+        <span class="menu-button__line" aria-hidden="true"></span>
+        <span class="menu-button__line" aria-hidden="true"></span>
+      </button>
+
+      <nav class="nav" id="global-nav" aria-label="メインメニュー">
+        <ul class="nav__list">
+          <li><a class="nav__link" href="#about">相撲とは</a></li>
+          <li><a class="nav__link" href="#rule">基本ルール</a></li>
+          <li><a class="nav__link" href="#ranking">番付</a></li>
+          <li><a class="nav__link" href="#experience">観戦の楽しみ方</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ===== FIRST VIEW ===== -->
+    <!-- ファーストビューの画像はAI生成のイメージです（架空の力士）。スマホでは縦長の画像に切り替えます。 -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__visual">
+        <picture>
+          <source media="(max-width: 767px)" srcset="img/hero-tachiai-sp.webp" width="941" height="1672">
+          <img class="hero__image" src="img/hero-tachiai.webp" width="1672" height="941" alt="土俵の中央で、2人の力士が頭と肩から激しくぶつかり合う立ち合いの瞬間。足元の砂が舞い上がっている。" fetchpriority="high">
+        </picture>
+      </div>
+      <div class="hero__content">
+        <p class="hero__lead">相撲初心者のためのガイド</p>
+        <h1 class="hero__title" id="hero-title">ぶつかる、一瞬。<br>心が震える。</h1>
+        <p class="hero__text">ぶつかり合う力と技、受け継がれてきた伝統。<br>基本を知るだけで、観戦はもっと楽しくなります。</p>
+        <a class="button" href="#about">相撲を知る</a>
+      </div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="section__inner">
+        <hgroup class="section-heading">
+          <p class="section-heading__en">ABOUT</p>
+          <h2 class="section-heading__ja" id="about-title">相撲とは</h2>
+        </hgroup>
+
+        <figure class="photo photo--about">
+          <img src="img/about-dohyoiri.webp" width="1400" height="934" loading="lazy" alt="満員の会場で、白い綱と金色の化粧まわしを着けた横綱が、両腕を大きく広げて土俵入りをしている。後ろには装束姿の付き人が控えている。">
+          <figcaption>横綱の土俵入り（AI生成イメージ）</figcaption>
+        </figure>
+
+        <div class="about">
+          <div class="about__text">
+            <p>相撲は、まわしを締めた2人の力士が「土俵（どひょう）」と呼ばれる円の中で組み合い、相手を倒すか円の外に出すことを競う競技です。ルールはとてもシンプルで、勝負は数秒で決まることも少なくありません。</p>
+            <p>その一瞬の中に、体の大きさだけでは決まらない駆け引きや技の工夫が詰まっています。小柄な力士が大きな相手を投げ飛ばすこともあり、そこが相撲の大きな魅力です。</p>
+          </div>
+
+          <div class="about__culture">
+            <h3 class="about__culture-title">日本文化とのつながり</h3>
+            <p>相撲は古くから、豊作を願う神事（神様にささげる儀式）として行われてきたと伝えられています。今でも、土俵に塩をまいて清める、力士が髷（まげ）を結う、行司（ぎょうじ）が伝統的な装束を着るなど、競技の中に昔からのしきたりが数多く残っています。</p>
+            <p>スポーツとしての迫力と、伝統文化としての美しさ。その両方を味わえるのが相撲です。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RULE ===== -->
+    <section class="section section--gray" id="rule" aria-labelledby="rule-title">
+      <div class="section__inner">
+        <hgroup class="section-heading">
+          <p class="section-heading__en">RULE</p>
+          <h2 class="section-heading__ja" id="rule-title">基本ルール</h2>
+        </hgroup>
+
+        <figure class="photo photo--rule">
+          <img src="img/rule-torikumi.webp" width="1400" height="934" loading="lazy" alt="土俵の上で2人の力士が組み合い、片方が相手を押し込んでいる。右側では行司が軍配を持って取組を見守っている。">
+          <figcaption>土俵の上での取組。右側に立つのが、取組を進行する行司です（AI生成イメージ）</figcaption>
+        </figure>
+
+        <div class="rule-grid">
+          <article class="card">
+            <p class="card__number" aria-hidden="true">01</p>
+            <h3 class="card__title">勝敗の決まり方</h3>
+            <p>次のどちらかになった力士が負けです。</p>
+            <ul class="check-list">
+              <li>足の裏以外の体の一部（手やひざなど）が土俵の地面についた</li>
+              <li>体の一部が土俵の外の地面に出た</li>
+            </ul>
+            <p>このほか、髪をつかむ、握りこぶしでなぐるなどの「反則」をした場合も負けになります。</p>
+          </article>
+
+          <article class="card">
+            <p class="card__number" aria-hidden="true">02</p>
+            <h3 class="card__title">土俵の基本</h3>
+            <p>土俵は土を固めて作られた台で、その上に俵（たわら）を円形に並べた勝負の場があります。円の直径は<strong>15尺（約4.55m）</strong>です。</p>
+            <dl class="term-list">
+              <div>
+                <dt>仕切り線</dt>
+                <dd>土俵の中央にある2本の白い線。力士はここで手をついて構えます。</dd>
+              </div>
+              <div>
+                <dt>立ち合い</dt>
+                <dd>取組（試合）の始まり。2人が呼吸を合わせて同時に立ち上がります。</dd>
+              </div>
+              <div>
+                <dt>行司</dt>
+                <dd>土俵の上で取組を進行し、勝った力士を示す役の人です。</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="card">
+            <p class="card__number" aria-hidden="true">03</p>
+            <h3 class="card__title">代表的な決まり手</h3>
+            <p>「決まり手」とは、勝負が決まったときの技の名前です。日本相撲協会では82の決まり手が定められています。まずは次の4つを覚えると観戦が楽しくなります。</p>
+            <dl class="term-list">
+              <div>
+                <dt>寄り切り</dt>
+                <dd>まわしをつかんで体を密着させ、相手を土俵の外へ出す技。</dd>
+              </div>
+              <div>
+                <dt>押し出し</dt>
+                <dd>まわしをつかまず、手で相手を押して土俵の外へ出す技。</dd>
+              </div>
+              <div>
+                <dt>上手投げ</dt>
+                <dd>相手の腕の外側からまわしをつかみ、投げて倒す技。</dd>
+              </div>
+              <div>
+                <dt>はたき込み</dt>
+                <dd>前に出てくる相手の肩や背中をはたいて、前に落とす技。</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RANKING ===== -->
+    <section class="section" id="ranking" aria-labelledby="ranking-title">
+      <div class="section__inner">
+        <hgroup class="section-heading">
+          <p class="section-heading__en">RANKING</p>
+          <h2 class="section-heading__ja" id="ranking-title">番付</h2>
+        </hgroup>
+
+        <p class="section__intro">「番付（ばんづけ）」とは、力士の地位を表すランキング表のことです。本場所（公式の大会）の成績によって、場所ごとに上がったり下がったりします。ここでは、最上位の「幕内（まくうち）」の地位を上から順に紹介します。</p>
+
+        <ol class="ranking">
+          <li class="ranking__item ranking__item--top">
+            <span class="ranking__rank">横綱</span>
+            <span class="ranking__reading">よこづな</span>
+            <p class="ranking__text">力士の最高位。強さに加えて品格も求められ、成績が下がっても大関に落ちることはありません。そのかわり、力が衰えたときは引退することになります。</p>
+          </li>
+          <li class="ranking__item">
+            <span class="ranking__rank">大関</span>
+            <span class="ranking__reading">おおぜき</span>
+            <p class="ranking__text">横綱に次ぐ地位。安定して好成績を残せる実力者が昇進します。2場所続けて負け越すと関脇に下がります。</p>
+          </li>
+          <li class="ranking__item">
+            <span class="ranking__rank">関脇</span>
+            <span class="ranking__reading">せきわけ</span>
+            <p class="ranking__text">大関の次の地位。大関をめざす力士たちがしのぎを削ります。</p>
+          </li>
+          <li class="ranking__item">
+            <span class="ranking__rank">小結</span>
+            <span class="ranking__reading">こむすび</span>
+            <p class="ranking__text">関脇の次の地位。大関・関脇・小結をまとめて「三役（さんやく）」と呼びます。</p>
+          </li>
+          <li class="ranking__item">
+            <span class="ranking__rank">前頭</span>
+            <span class="ranking__reading">まえがしら</span>
+            <p class="ranking__text">幕内で最も人数が多い地位。「前頭筆頭」「前頭二枚目」のように数字で細かく順位が分かれています。</p>
+          </li>
+        </ol>
+
+        <div class="note">
+          <h3 class="note__title">知っておくと便利な言葉</h3>
+          <ul class="check-list">
+            <li><strong>東と西</strong>：番付は東と西に分かれていて、同じ地位なら東のほうが上位とされます。</li>
+            <li><strong>勝ち越し・負け越し</strong>：幕内の力士は1場所で15番取ります。8勝以上が「勝ち越し」で、番付が上がる目安になります。</li>
+            <li><strong>幕内より下の地位</strong>：十両（じゅうりょう）、幕下（まくした）、三段目、序二段、序ノ口と続きます。十両以上の力士は「関取（せきとり）」と呼ばれます。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EXPERIENCE ===== -->
+    <section class="section section--dark" id="experience" aria-labelledby="experience-title">
+      <div class="section__inner">
+        <hgroup class="section-heading section-heading--light">
+          <p class="section-heading__en">EXPERIENCE</p>
+          <h2 class="section-heading__ja" id="experience-title">観戦の楽しみ方</h2>
+        </hgroup>
+
+        <figure class="photo photo--experience">
+          <img src="img/experience-kokugikan.webp" width="1600" height="901" loading="lazy" alt="満員の観客席に囲まれた相撲会場。中央の土俵の上には、神社の屋根のような吊り屋根が下がっている。">
+          <figcaption>満員の会場の熱気も、観戦の醍醐味です（AI生成イメージ）</figcaption>
+        </figure>
+
+        <div class="experience" id="experience-slider" role="region" aria-roledescription="カルーセル" aria-label="観戦ガイド">
+          <article class="experience__block">
+            <h3 class="experience__title">本場所の楽しみ方</h3>
+            <p>本場所は年6回、それぞれ15日間開かれます。会場は東京（年3回）、大阪、名古屋、福岡です。</p>
+            <p>会場では朝から下の地位の力士の取組が始まり、時間がたつにつれて上の地位の取組になっていきます。幕内力士がそろって土俵に上がる「土俵入り」や、その日の最後の取組のあとに行われる「弓取り式」など、取組以外の儀式も見どころです。</p>
+          </article>
+
+          <article class="experience__block">
+            <h3 class="experience__title">取組の注目ポイント</h3>
+            <ul class="check-list check-list--light">
+              <li><strong>仕切り</strong>：力士は塩をまき、何度も構えて気持ちを高めます。回数を重ねるごとに会場の緊張感も高まります。</li>
+              <li><strong>立ち合い</strong>：勝負の多くはここで流れが決まると言われます。最初のぶつかり合いに注目しましょう。</li>
+              <li><strong>力士の得意な形</strong>：押しが得意な力士、まわしを取って組むのが得意な力士など、それぞれの「型」を知ると展開が読めるようになります。</li>
+              <li><strong>懸賞旗</strong>：取組の前に土俵のまわりを回る旗は「懸賞」。旗が多いほど、注目度の高い一番だといえます。</li>
+            </ul>
+          </article>
+
+          <article class="experience__block">
+            <h3 class="experience__title">初心者への観戦アドバイス</h3>
+            <ul class="check-list check-list--light">
+              <li>はじめは<strong>気になる力士を1人決めて</strong>応援すると、勝敗が一気に楽しくなります。</li>
+              <li>このページの<strong>決まり手を4つ</strong>覚えておくと、場内アナウンスの意味がわかります。</li>
+              <li>会場に行けない日は、テレビやインターネットの中継から気軽に始めるのもおすすめです。</li>
+              <li>日程、チケット、会場のルールは変わることがあります。<strong>観戦前に必ず公式情報を確認</strong>してください。</li>
+            </ul>
+          </article>
+        </div>
+        <div class="slider-controls" hidden>
+          <button type="button" class="slider-prev" aria-label="前のガイド" aria-controls="experience-slider">←</button>
+          <p class="slider-status" aria-live="polite" aria-atomic="true"></p>
+          <button type="button" class="slider-next" aria-label="次のガイド" aria-controls="experience-slider">→</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <a class="back-to-top" href="#top" aria-label="ページの先頭へ戻る" hidden>↑</a>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <a class="logo logo--footer" href="#top">SUMO <span class="logo__accent">GUIDE</span></a>
+      <nav aria-label="フッターメニュー">
+        <ul class="footer__nav">
+          <li><a href="#about">相撲とは</a></li>
+          <li><a href="#rule">基本ルール</a></li>
+          <li><a href="#ranking">番付</a></li>
+          <li><a href="#experience">観戦の楽しみ方</a></li>
+        </ul>
+      </nav>
+      <p class="footer__note">本サイトは、相撲の魅力を紹介する非公式のサイトです。日本相撲協会とは関係ありません。<br>掲載画像はAIで生成したイメージです。実在の力士・会場を撮影したものではありません。</p>
+      <p class="footer__copy"><small>&copy; 2026 SUMO GUIDE</small></p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,802 @@
+/* ==========================================================
+   SUMO GUIDE
+   スマートフォンを基準にし、画面が広くなるほどレイアウトを広げます
+   ========================================================== */
+
+/* ---------- 色・サイズの設定（ここを変えるとサイト全体に反映） ---------- */
+:root {
+  --color-black: #171717;
+  --color-gold: #c9a45c;
+  --color-white: #ffffff;
+  --color-gray: #f6f4ef;
+  --color-text: #171717;
+  --color-text-sub: #555555;
+  --color-border: #e4ded0;
+
+  --font-serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+  --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+
+  --header-height: 64px;
+  --content-width: 1080px;
+}
+
+/* ---------- 基本設定 ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: var(--header-height); /* 固定ヘッダーに見出しが隠れないようにする */
+}
+
+/* 「動きを減らす」設定がオフの人だけ、スムーススクロールにする */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden; /* スマホでの横スクロールを防ぐ */
+  background-color: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+/* キーボード操作時に最初に表示される「本文へスキップ」リンク */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 200;
+  padding: 8px 16px;
+  background-color: var(--color-gold);
+  color: var(--color-black);
+  font-weight: bold;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ---------- ロゴ ---------- */
+.logo {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  color: var(--color-white);
+}
+
+.logo__accent {
+  color: var(--color-gold);
+}
+
+/* ---------- ボタン ---------- */
+.button {
+  display: inline-block;
+  padding: 14px 40px;
+  border: 1px solid var(--color-gold);
+  background-color: var(--color-gold);
+  color: var(--color-black);
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.button:hover {
+  background-color: transparent;
+  color: var(--color-gold);
+}
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  height: var(--header-height);
+  background-color: rgba(23, 23, 23, 0.95);
+  border-bottom: 1px solid rgba(201, 164, 92, 0.4);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--content-width);
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ハンバーガーボタン（スマホ・タブレット） */
+.menu-button {
+  position: relative;
+  z-index: 110;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.menu-button__line {
+  position: absolute;
+  left: 12px;
+  width: 24px;
+  height: 2px;
+  background-color: var(--color-white);
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.menu-button__line:nth-child(1) { top: 16px; }
+.menu-button__line:nth-child(2) { top: 23px; }
+.menu-button__line:nth-child(3) { top: 30px; }
+
+/* 開いているときは「×」の形にする */
+.menu-button[aria-expanded="true"] .menu-button__line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menu-button[aria-expanded="true"] .menu-button__line:nth-child(2) {
+  opacity: 0;
+}
+.menu-button[aria-expanded="true"] .menu-button__line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* メニュー本体（スマホでは全画面で表示） */
+.nav {
+  position: fixed;
+  inset: var(--header-height) 0 0 0;
+  background-color: var(--color-black);
+  visibility: hidden; /* 閉じているときはキーボードでも選択されないようにする */
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.nav.is-open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.nav__list {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+}
+
+.nav__link {
+  display: block;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(201, 164, 92, 0.3);
+  color: var(--color-white);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+
+.nav__link:hover {
+  color: var(--color-gold);
+}
+
+/* メニューが開いている間は背景のスクロールを止める */
+body.is-menu-open {
+  overflow: hidden;
+}
+
+/* ==========================================================
+   FIRST VIEW
+   画像は img/hero-tachiai.webp（PC）と img/hero-tachiai-sp.webp（スマホ）
+   ========================================================== */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end; /* スマホでは力士の顔に文字が重ならないよう、下に寄せる */
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: calc(var(--header-height) + 48px) 16px 64px;
+  overflow: hidden;
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+/* 画面いっぱいの画像（スクロールに合わせてゆっくり下に動く） */
+.hero__visual {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* 文字を読みやすくするための黒いオーバーレイ */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(10, 10, 10, 0.92) 0%, rgba(10, 10, 10, 0.55) 45%, rgba(10, 10, 10, 0.25) 100%);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.hero__lead {
+  margin-bottom: 20px;
+  color: var(--color-gold);
+  font-size: 0.875rem;
+  letter-spacing: 0.25em;
+}
+
+.hero__title {
+  margin-bottom: 28px;
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 9vw, 4.5rem);
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+}
+
+.hero__text {
+  margin-bottom: 40px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ==========================================================
+   共通セクション
+   ========================================================== */
+.section {
+  padding: 88px 16px;
+}
+
+.section--gray {
+  background-color: var(--color-gray);
+}
+
+.section--dark {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.section__inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.section-heading {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.section-heading__en {
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: 0.875rem;
+  font-weight: bold;
+  letter-spacing: 0.35em;
+}
+
+.section-heading__ja {
+  position: relative;
+  padding-bottom: 20px;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  letter-spacing: 0.12em;
+}
+
+/* 見出しの下の金の線 */
+.section-heading__ja::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 48px;
+  height: 2px;
+  background-color: var(--color-gold);
+  transform: translateX(-50%);
+}
+
+.section__intro {
+  max-width: 760px;
+  margin: 0 auto 48px;
+}
+
+/* チェックマーク付きリスト */
+.check-list li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-top: 10px;
+}
+
+.check-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.75em;
+  left: 0.2em;
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-gold);
+  transform: rotate(45deg);
+}
+
+/* セクション内の大きな写真（AI生成イメージ） */
+.photo {
+  margin: 0 -16px 48px; /* スマホでは画面の端まで広げて迫力を出す */
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.photo figcaption {
+  margin-top: 12px;
+  padding: 0 16px;
+  color: var(--color-text-sub);
+  font-size: 0.8125rem;
+}
+
+.section--dark .photo figcaption {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.photo--about img {
+  object-position: center 25%;
+}
+
+/* ==========================================================
+   ABOUT
+   ========================================================== */
+.about {
+  display: grid;
+  gap: 40px;
+}
+
+.about__text p + p,
+.about__culture p + p {
+  margin-top: 1em;
+}
+
+.about__culture {
+  padding: 32px 24px;
+  border-top: 3px solid var(--color-gold);
+  background-color: var(--color-gray);
+}
+
+.about__culture-title {
+  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+}
+
+/* ==========================================================
+   RULE
+   ========================================================== */
+.rule-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.card {
+  padding: 32px 24px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+}
+
+.card > p + p,
+.card > .check-list + p {
+  margin-top: 1em;
+}
+
+.card__number {
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.card__title {
+  margin: 12px 0 16px;
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+}
+
+.term-list {
+  margin-top: 20px;
+}
+
+.term-list div {
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.term-list dt {
+  font-weight: bold;
+}
+
+.term-list dd {
+  color: var(--color-text-sub);
+  font-size: 0.9375rem;
+}
+
+/* ==========================================================
+   RANKING
+   ========================================================== */
+.ranking {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.ranking__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 24px;
+  border-left: 4px solid var(--color-black);
+  background-color: var(--color-gray);
+}
+
+.ranking__item--top {
+  border-left-color: var(--color-gold);
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.ranking__rank {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+}
+
+.ranking__item--top .ranking__rank {
+  color: var(--color-gold);
+}
+
+.ranking__reading {
+  color: var(--color-text-sub);
+  font-size: 0.875rem;
+}
+
+.ranking__item--top .ranking__reading {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ranking__text {
+  grid-column: 1 / -1;
+}
+
+.note {
+  max-width: 760px;
+  margin: 48px auto 0;
+  padding: 32px 24px;
+  border: 1px solid var(--color-gold);
+}
+
+.note__title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+}
+
+/* ==========================================================
+   EXPERIENCE
+   ========================================================== */
+.section-heading--light .section-heading__ja {
+  color: var(--color-white);
+}
+
+.experience {
+  display: grid;
+  gap: 24px;
+}
+
+.experience__block {
+  padding: 32px 24px;
+  border: 1px solid rgba(201, 164, 92, 0.4);
+}
+
+.experience__block > p + p {
+  margin-top: 1em;
+}
+
+.experience__title {
+  margin-bottom: 16px;
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+.footer {
+  padding: 56px 16px 32px;
+  border-top: 1px solid rgba(201, 164, 92, 0.4);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  text-align: center;
+}
+
+.footer__inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  margin: 24px 0;
+}
+
+.footer__nav a {
+  display: inline-block;
+  padding: 4px 0;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.footer__nav a:hover {
+  color: var(--color-gold);
+}
+
+.footer__note {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8125rem;
+}
+
+.footer__copy {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================
+   タブレット（768px以上）
+   ========================================================== */
+@media (min-width: 768px) {
+  .section {
+    padding: 120px 32px;
+  }
+
+  .header__inner,
+  .hero {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .hero {
+    align-items: center;
+  }
+
+  /* PCでは左側に文字を置くため、左から暗くする */
+  .hero::after {
+    background:
+      linear-gradient(to right, rgba(10, 10, 10, 0.88) 0%, rgba(10, 10, 10, 0.55) 50%, rgba(10, 10, 10, 0.3) 100%),
+      linear-gradient(to top, rgba(10, 10, 10, 0.6) 0%, transparent 40%);
+  }
+
+  .about {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  /* タブレット以上では横長に切り抜き、写真を主役にする */
+  .photo {
+    margin: 0 0 64px;
+  }
+
+  .photo img {
+    aspect-ratio: 21 / 9;
+  }
+
+  .photo figcaption {
+    padding: 0;
+  }
+
+  .about__culture,
+  .card,
+  .experience__block,
+  .note {
+    padding: 40px 32px;
+  }
+
+  .ranking__item {
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+  }
+
+  .ranking__reading {
+    grid-row: 2;
+  }
+
+  .ranking__text {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+}
+
+/* ==========================================================
+   PC（1024px以上）：ハンバーガーをやめて横並びメニューにする
+   ========================================================== */
+@media (min-width: 1024px) {
+  .menu-button {
+    display: none;
+  }
+
+  .nav {
+    position: static;
+    visibility: visible;
+    opacity: 1;
+    background: none;
+  }
+
+  .nav__list {
+    flex-direction: row;
+    gap: 36px;
+    padding: 0;
+  }
+
+  .nav__link {
+    padding: 8px 0;
+    border-bottom: none;
+    font-size: 0.9375rem;
+  }
+
+  .rule-grid,
+  .experience {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 「動きを減らす」設定の人には、アニメーションを止める */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* スクロールと連動する演出 */
+.header {
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.header.is-scrolled {
+  background-color: rgba(23, 23, 23, 0.99);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-gold);
+  transform: scaleX(var(--read-progress, 0));
+  transform-origin: left;
+}
+.nav__link[aria-current="location"] { color: var(--color-gold); }
+.hero__visual { transform: translateY(var(--parallax, 0px)); }
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-gold);
+  color: var(--color-black);
+  border: 1px solid var(--color-black);
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+[hidden] { display: none !important; }
+.experience.is-slider {
+  display: block;
+  max-width: 800px;
+  margin: auto;
+}
+.is-slider .experience__block { min-height: 360px; }
+.slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 28px;
+}
+.slider-controls button {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--color-gold);
+  background: transparent;
+  color: var(--color-gold);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.25s, color 0.25s;
+}
+.slider-controls button:hover {
+  background: var(--color-gold);
+  color: var(--color-black);
+}
+.slider-status { color: var(--color-gold); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.8s var(--reveal-delay, 0ms), transform 0.8s var(--reveal-delay, 0ms);
+  }
+  .reveal.is-visible, .reveal:focus-within { opacity: 1; transform: translateY(0); }
+  .is-slider .experience__block:not([hidden]) { animation: slide-reveal 0.5s ease both; }
+  @keyframes slide-reveal {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+}

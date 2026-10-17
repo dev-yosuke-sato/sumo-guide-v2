@@ -1,0 +1,7 @@
+# GitHubに上げないファイル
+
+# AI生成画像の元データ（PNG・約16MB）。サイトでは変換後のWebPを使う
+img/original/
+
+# Macが自動で作るファイル
+.DS_Store
