@@ -81,6 +81,82 @@ if ('IntersectionObserver' in window) {
   });
 }
 
+// ==========================================================
+// 横スクロール（PC・タブレット）
+// 縦にスクロールした量だけ、ページの中身を左へ動かす。
+// ホイール・トラックパッド・キーボード（↓、Space、PageDown）は、ブラウザ本来の縦スクロールをそのまま使う。
+// ==========================================================
+const horizontalQuery = window.matchMedia('(min-width: 768px) and (min-height: 600px)');
+const hscroll = document.querySelector('.hscroll');
+const hscrollTrack = document.querySelector('.hscroll__track');
+let hscrollDistance = 0;
+
+function isHorizontal() {
+  return document.documentElement.classList.contains('is-horizontal');
+}
+
+// 横に動ける距離を測り、その分だけ縦の長さを確保する
+function setupHorizontal() {
+  document.documentElement.classList.toggle('is-horizontal', horizontalQuery.matches);
+  if (isHorizontal()) {
+    hscrollDistance = Math.max(0, hscrollTrack.scrollWidth - window.innerWidth);
+    hscroll.style.setProperty('--hscroll-height', `${hscrollDistance + window.innerHeight}px`);
+  } else {
+    hscrollDistance = 0;
+    hscroll.style.removeProperty('--hscroll-height');
+    hscrollTrack.style.removeProperty('--hscroll-x');
+  }
+}
+
+// 今、横に何px動いているか
+function getHorizontalX() {
+  return Math.min(hscrollDistance, Math.max(0, window.scrollY - hscroll.offsetTop));
+}
+
+// 要素の位置まで移動する（横スクロール時は、横の位置を縦のスクロール量に置き換える）
+function scrollToElement(target, smooth = true) {
+  // 'auto' だとCSSのスムーススクロール設定が使われるため、即時移動は 'instant' を指定する
+  const behavior = smooth && !motionQuery.matches ? 'smooth' : 'instant';
+  if (!isHorizontal()) {
+    target.scrollIntoView({ behavior });
+    return;
+  }
+  const x = target.getBoundingClientRect().left + getHorizontalX();
+  window.scrollTo({ top: hscroll.offsetTop + Math.min(x, hscrollDistance), behavior });
+}
+
+// ページ内リンク（メニュー、ボタン、ページトップ）
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const target = document.querySelector(link.hash);
+    if (!target || !isHorizontal()) return;
+    event.preventDefault();
+    scrollToElement(target);
+    history.pushState(null, '', link.hash);
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  });
+});
+
+// Tabキーで画面外の要素にフォーカスが移ったら、その位置まで横に移動する
+document.addEventListener('focusin', (event) => {
+  if (!isHorizontal() || !hscrollTrack.contains(event.target)) return;
+  const rect = event.target.getBoundingClientRect();
+  if (rect.left < 0 || rect.right > window.innerWidth) {
+    window.scrollTo({ top: window.scrollY + rect.left - 120, behavior: 'instant' });
+  }
+});
+
+window.addEventListener('resize', () => {
+  setupHorizontal();
+  requestScrollUpdate();
+});
+horizontalQuery.addEventListener('change', () => {
+  setupHorizontal();
+  requestScrollUpdate();
+});
+setupHorizontal();
+
 // 読了バー、ヘッダー、現在地ナビを1フレームにまとめて更新する。
 const header = document.querySelector('.header');
 const heroVisual = document.querySelector('.hero__visual');
@@ -92,12 +168,17 @@ function updateScroll() {
   header.style.setProperty('--read-progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
   header.classList.toggle('is-scrolled', window.scrollY > 40);
   backToTop.hidden = window.scrollY < 500;
+  const x = isHorizontal() ? getHorizontalX() : 0;
+  hscrollTrack.style.setProperty('--hscroll-x', x);
   if (heroVisual) {
-    heroVisual.style.setProperty('--parallax', motionQuery.matches ? '0px' : `${Math.min(window.scrollY, window.innerHeight) * 0.16}px`);
+    const parallax = motionQuery.matches ? 0 : Math.min(window.scrollY, window.innerHeight) * 0.16;
+    heroVisual.style.setProperty('--parallax', isHorizontal() ? '0px' : `${parallax}px`);
+    heroVisual.style.setProperty('--parallax-x', motionQuery.matches ? '0px' : `${Math.min(x, window.innerWidth) * 0.3}px`);
   }
   let current = 'top';
   sections.forEach((section) => {
-    if (section.getBoundingClientRect().top <= header.offsetHeight + 100) current = section.id;
+    const rect = section.getBoundingClientRect();
+    if (isHorizontal() ? rect.left <= window.innerWidth * 0.4 : rect.top <= header.offsetHeight + 100) current = section.id;
   });
   navLinks.forEach((link) => {
     if (link.hash === `#${current}`) link.setAttribute('aria-current', 'location');
@@ -112,7 +193,6 @@ function requestScrollUpdate() {
   }
 }
 window.addEventListener('scroll', requestScrollUpdate, { passive: true });
-window.addEventListener('resize', requestScrollUpdate);
 motionQuery.addEventListener('change', requestScrollUpdate);
 updateScroll();
 
@@ -156,3 +236,11 @@ slider.addEventListener('touchend', (event) => {
   touchStart = null;
 }, { passive: true });
 showSlide(0);
+
+// URLに #rule などが付いた状態で開いたときは、その位置から表示する
+window.addEventListener('load', () => {
+  setupHorizontal();
+  const target = location.hash && document.querySelector(location.hash);
+  if (target && isHorizontal()) scrollToElement(target, false);
+  requestScrollUpdate();
+});

@@ -800,3 +800,328 @@ body.is-menu-open {
     to { opacity: 1; transform: translateX(0); }
   }
 }
+
+/* ==========================================================
+   横スクロール（PC・タブレット）
+   main.js が html に .is-horizontal を付けたときだけ有効。
+   縦にスクロールした量だけ、.hscroll__track を左へ動かす。
+   スマホ（幅767px以下）や高さが足りない画面では、通常の縦スクロールのまま。
+   ========================================================== */
+.scroll-hint {
+  display: none;
+}
+
+.is-horizontal .hscroll {
+  position: relative;
+  height: var(--hscroll-height, 100vh); /* 横に動く距離ぶん、縦の長さを確保する */
+}
+
+.is-horizontal .hscroll__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: clip; /* はみ出した部分を隠す（フォーカス移動で勝手にずれないよう clip を使う） */
+}
+
+.is-horizontal .hscroll__track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  transform: translate3d(calc(var(--hscroll-x, 0) * -1px), 0, 0);
+  will-change: transform;
+}
+
+.is-horizontal main {
+  display: flex;
+  height: 100%;
+}
+
+/* 各セクションを、画面の高さいっぱいの「パネル」にする */
+.is-horizontal .section {
+  flex: 0 0 auto;
+  height: 100%;
+  padding: calc(var(--header-height) + 40px) 96px 48px 72px;
+}
+
+.is-horizontal .section__inner {
+  display: flex;
+  align-items: stretch;
+  gap: 56px;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* 見出しは縦書きにして、パネルの左端に置く */
+.is-horizontal .section-heading {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: 0;
+  padding-right: 32px;
+  border-right: 1px solid var(--color-gold);
+  writing-mode: vertical-rl;
+  text-align: start;
+}
+
+.is-horizontal .section-heading__ja {
+  padding: 0;
+  font-size: clamp(2rem, 4.2vh, 2.75rem);
+  letter-spacing: 0.3em;
+}
+
+.is-horizontal .section-heading__ja::after {
+  display: none;
+}
+
+/* 写真はパネルの高さいっぱいに表示する */
+.is-horizontal .photo {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+}
+
+.is-horizontal .photo img {
+  flex: 1;
+  width: auto;
+  min-height: 0;
+  height: 100%;
+  object-fit: cover;
+}
+
+.is-horizontal .photo--about img {
+  aspect-ratio: 4 / 5;
+}
+
+.is-horizontal .photo--rule img {
+  aspect-ratio: 4 / 3;
+}
+
+.is-horizontal .photo--experience img {
+  aspect-ratio: 3 / 2;
+}
+
+.is-horizontal .photo figcaption {
+  padding: 0;
+}
+
+/* 文章のかたまりは、画面の高さに収まらないときだけ中でスクロールできるようにする */
+.is-horizontal .about__text,
+.is-horizontal .about__culture,
+.is-horizontal .card,
+.is-horizontal .section__intro,
+.is-horizontal .note,
+.is-horizontal .experience-panel {
+  flex: 0 0 auto;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* ----- FIRST VIEW ----- */
+.is-horizontal .hero {
+  flex: 0 0 auto;
+  width: 100vw;
+  height: 100%;
+  min-height: 0;
+}
+
+.is-horizontal .hero__visual {
+  transform: translate3d(var(--parallax-x, 0px), 0, 0);
+}
+
+.is-horizontal .scroll-hint {
+  position: absolute;
+  right: 48px;
+  bottom: 40px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.35em;
+}
+
+/* 先へ進む方向（右側の内容が左へ流れてくる）を示す線 */
+.is-horizontal .scroll-hint::after {
+  content: "";
+  width: 96px;
+  height: 1px;
+  background: linear-gradient(to right, var(--color-gold), transparent);
+}
+
+/* ----- ABOUT ----- */
+.is-horizontal .about {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.is-horizontal .about__text {
+  width: 380px;
+  padding-top: 8px;
+}
+
+.is-horizontal .about__culture {
+  width: 400px;
+}
+
+/* ----- RULE ----- */
+.is-horizontal .rule-grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.is-horizontal .card {
+  width: 420px;
+  padding: 28px 28px;
+}
+
+.is-horizontal .card__title {
+  margin: 8px 0 12px;
+}
+
+.is-horizontal .term-list {
+  margin-top: 12px;
+}
+
+.is-horizontal .term-list div {
+  padding: 8px 0;
+}
+
+/* ----- RANKING：番付表のように縦長の札を横に並べる ----- */
+.is-horizontal .section__intro {
+  width: 320px;
+  margin: 0;
+  align-self: center;
+}
+
+.is-horizontal .ranking {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  max-width: none;
+  margin: 0;
+}
+
+.is-horizontal .ranking__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 220px;
+  height: 100%;
+  padding: 32px 22px;
+  border-left: none;
+  border-top: 4px solid var(--color-black);
+}
+
+.is-horizontal .ranking__item--top {
+  border-top-color: var(--color-gold);
+}
+
+.is-horizontal .ranking__rank {
+  font-size: clamp(2.5rem, 6vh, 3.5rem);
+  line-height: 1.1;
+  writing-mode: vertical-rl;
+}
+
+/* 説明文は札の下側にそろえ、上の大きな地位名を引き立てる */
+.is-horizontal .ranking__text {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  overflow-y: auto;
+}
+
+.is-horizontal .ranking__item--top .ranking__text {
+  border-top-color: rgba(201, 164, 92, 0.4);
+}
+
+.is-horizontal .note {
+  width: 380px;
+  margin: 0;
+  align-self: center;
+}
+
+/* ----- EXPERIENCE ----- */
+.is-horizontal .experience-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 520px;
+}
+
+.is-horizontal .experience.is-slider {
+  max-width: none;
+  margin: 0;
+}
+
+/* ----- FOOTER：最後のパネル ----- */
+.is-horizontal .footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  width: 520px;
+  height: 100%;
+  padding: calc(var(--header-height) + 40px) 56px 48px;
+  border-top: none;
+  border-left: 1px solid rgba(201, 164, 92, 0.4);
+}
+
+/* 高さが低い画面（ノートPCなど）では、カードを横に広げ、用語を2列にして縦に収める */
+@media (max-height: 820px) {
+  .is-horizontal .section {
+    padding-top: calc(var(--header-height) + 28px);
+    padding-bottom: 32px;
+  }
+
+  .is-horizontal .card {
+    width: 560px;
+    font-size: 0.875rem;
+    line-height: 1.75;
+  }
+
+  .is-horizontal .card:first-child {
+    width: 400px;
+  }
+
+  .is-horizontal .term-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+  }
+
+  .is-horizontal .term-list dd {
+    font-size: 0.8125rem;
+  }
+
+  .is-horizontal .note {
+    width: 460px;
+    font-size: 0.875rem;
+  }
+
+  .is-horizontal .about__text,
+  .is-horizontal .about__culture {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .is-horizontal .scroll-hint::after {
+    animation: scroll-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes scroll-hint {
+    0%, 100% { transform: scaleX(0.4); transform-origin: left; }
+    50% { transform: scaleX(1); transform-origin: left; }
+  }
+}

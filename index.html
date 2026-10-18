@@ -48,6 +48,10 @@
     </div>
   </header>
 
+  <!-- PC・タブレットでは、この枠の中身を縦スクロールに合わせて左へ動かす（横スクロール）。スマホでは普通の縦並び -->
+  <div class="hscroll">
+    <div class="hscroll__sticky">
+      <div class="hscroll__track">
   <main id="main">
     <!-- ===== FIRST VIEW ===== -->
     <!-- ファーストビューの画像はAI生成のイメージです（架空の力士）。スマホでは縦長の画像に切り替えます。 -->
@@ -64,6 +68,7 @@
         <p class="hero__text">ぶつかり合う力と技、受け継がれてきた伝統。<br>基本を知るだけで、観戦はもっと楽しくなります。</p>
         <a class="button" href="#about">相撲を知る</a>
       </div>
+      <p class="scroll-hint" aria-hidden="true">SCROLL</p>
     </section>
 
     <!-- ===== ABOUT ===== -->
@@ -228,6 +233,7 @@
           <figcaption>満員の会場の熱気も、観戦の醍醐味です（AI生成イメージ）</figcaption>
         </figure>
 
+        <div class="experience-panel">
         <div class="experience" id="experience-slider" role="region" aria-roledescription="カルーセル" aria-label="観戦ガイド">
           <article class="experience__block">
             <h3 class="experience__title">本場所の楽しみ方</h3>
@@ -260,10 +266,10 @@
           <p class="slider-status" aria-live="polite" aria-atomic="true"></p>
           <button type="button" class="slider-next" aria-label="次のガイド" aria-controls="experience-slider">→</button>
         </div>
+        </div>
       </div>
     </section>
   </main>
-  <a class="back-to-top" href="#top" aria-label="ページの先頭へ戻る" hidden>↑</a>
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
@@ -281,5 +287,9 @@
       <p class="footer__copy"><small>&copy; 2026 SUMO GUIDE</small></p>
     </div>
   </footer>
+      </div>
+    </div>
+  </div>
+  <a class="back-to-top" href="#top" aria-label="ページの先頭へ戻る" hidden>↑</a>
 </body>
 </html>
