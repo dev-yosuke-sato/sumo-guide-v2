@@ -93,6 +93,7 @@
 
     <!-- ===== ABOUT ===== -->
     <section class="section" id="about" aria-labelledby="about-title">
+      <div class="wagara" aria-hidden="true"></div><!-- 背景の和柄（青海波）。PCではスクロールに合わせてゆっくり動く -->
       <div class="section__inner">
         <hgroup class="section-heading">
           <p class="section-heading__en">ABOUT</p>
@@ -122,7 +123,7 @@
     <!-- ===== RULE ===== -->
     <section class="section section--gray" id="rule" aria-labelledby="rule-title">
       <div class="section__inner">
-        <hgroup class="section-heading">
+        <hgroup class="section-heading section-heading--impact">
           <p class="section-heading__en">RULE</p>
           <h2 class="section-heading__ja" id="rule-title">基本ルール</h2>
         </hgroup>
@@ -168,7 +169,8 @@
             <p class="card__number" aria-hidden="true">03</p>
             <h3 class="card__title">代表的な決まり手</h3>
             <p>「決まり手」とは、勝負が決まったときの技の名前です。日本相撲協会では82の決まり手が定められています。まずは次の4つを覚えると観戦が楽しくなります。</p>
-            <dl class="term-list">
+            <!-- JavaScriptが有効なときは、4つの決まり手をボタンで切り替える表示になる -->
+            <dl class="term-list term-list--kimarite">
               <div>
                 <dt>寄り切り</dt>
                 <dd>まわしをつかんで体を密着させ、相手を土俵の外へ出す技。</dd>
@@ -253,6 +255,9 @@
           <figcaption>満員の会場の熱気も、観戦の醍醐味です（AI生成イメージ）</figcaption>
         </figure>
 
+        <!-- 【差し替え予定】塩まきの写真（作り直し中）。画像が届いたら、ここに
+             <figure class="photo photo--shiomaki"> … </figure> を追加する（CSSは用意済み） -->
+
         <div class="experience-panel">
         <div class="experience" id="experience-slider" role="region" aria-roledescription="カルーセル" aria-label="観戦ガイド">
           <article class="experience__block">
@@ -293,6 +298,8 @@
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
+    <p class="footer__mark" aria-hidden="true">SUMO GUIDE</p>
+    <span class="footer__line" aria-hidden="true"></span>
     <div class="footer__inner">
       <a class="logo logo--footer" href="#top">SUMO <span class="logo__accent">GUIDE</span></a>
       <nav aria-label="フッターメニュー">

@@ -106,7 +106,7 @@ if (root.classList.contains('is-opening')) {
 // （ファーストビューは上のオープニング演出で表示するので対象外）
 // ==========================================================
 const revealTargets = document.querySelectorAll(
-  '.section-heading, .photo, .about > *, .card, .section__intro, .ranking__item, .note'
+  '.section-heading, .photo, .about > *, .card, .section__intro, .ranking__item, .note, .experience-panel, .footer'
 );
 if ('IntersectionObserver' in window) {
   const revealObserver = new IntersectionObserver((entries) => {
@@ -119,7 +119,9 @@ if ('IntersectionObserver' in window) {
   }, { threshold: 0.08 });
   revealTargets.forEach((element) => {
     const index = [...element.parentElement.children].indexOf(element);
-    element.style.setProperty('--reveal-delay', `${Math.min(index, 3) * 100}ms`);
+    // 番付は横綱から順に、少しずつ時間差を付けて出す
+    const delay = element.matches('.ranking__item') ? index * 140 : Math.min(index, 3) * 100;
+    element.style.setProperty('--reveal-delay', `${delay}ms`);
     element.classList.add('reveal');
     revealObserver.observe(element);
   });
@@ -140,6 +142,8 @@ const backToTop = document.querySelector('.back-to-top');
 const sections = [...document.querySelectorAll('main > section[id]')];
 const currentLinks = document.querySelectorAll('.nav__link, .progress__link');
 const progressFill = document.querySelector('.progress__fill');
+
+backToTop.hidden = false; // 以後は .is-shown で表示を切り替える（CSSでフェード）
 
 let hscrollDistance = 0; // 横に動ける距離
 let currentX = 0;        // 今、画面に表示している横位置
@@ -175,10 +179,20 @@ function setupHorizontal() {
   hscroll.style.setProperty('--hscroll-height', `${hscrollDistance + window.innerHeight}px`);
   // transform を外した状態で測るので、getBoundingClientRect の値がそのまま横位置になる
   sectionStarts = sections.map((section) => section.getBoundingClientRect().left);
-  parallaxItems = [...document.querySelectorAll('.photo img')].map((element) => {
+  // factor：動く速さ（大きいほど奥にあるように見える）／range：動く幅の上限／zoom：近づくほど拡大するか
+  const measure = (element, options) => {
     const rect = element.getBoundingClientRect();
-    return { element, center: rect.left + rect.width / 2, range: rect.width * 0.06 };
-  });
+    return { element, center: rect.left + rect.width / 2, width: rect.width, ...options };
+  };
+  parallaxItems = [
+    ...[...document.querySelectorAll('.photo img')].map((element) => measure(element, {
+      factor: 0.08, range: element.getBoundingClientRect().width * 0.06, scale: 1.14,
+      zoom: Boolean(element.closest('.photo--experience')),
+    })),
+    ...[...document.querySelectorAll('.wagara')].map((element) => measure(element, {
+      factor: 0.25, range: Infinity, scale: 1, zoom: false,
+    })),
+  ];
   currentX = getTargetX();
   render();
 }
@@ -191,9 +205,17 @@ function render() {
   if (isHorizontal()) {
     hscrollTrack.style.transform = `translate3d(${-currentX}px, 0, 0)`;
     // 写真は文字よりゆっくり動かし、奥行きを出す（拡大しておき、端が見えないよう動きの幅を制限）
-    parallaxItems.forEach(({ element, center, range }) => {
-      const offset = reduced ? 0 : Math.max(-range, Math.min(range, (center - currentX - viewWidth / 2) * -0.08));
-      element.style.transform = reduced ? '' : `translate3d(${offset}px, 0, 0) scale(1.14)`;
+    parallaxItems.forEach(({ element, center, width, factor, range, scale, zoom }) => {
+      if (reduced) {
+        element.style.transform = '';
+        return;
+      }
+      const distance = center - currentX - viewWidth / 2; // 画面の中心からの距離
+      const offset = Math.max(-range, Math.min(range, distance * -factor));
+      // 国技館の写真は、画面を通り過ぎるにつれて 1.08倍→1.25倍 にゆっくり近づく
+      const progress = Math.max(0, Math.min(1, 1 - (distance + width / 2) / (viewWidth + width)));
+      const size = zoom ? 1.08 + progress * 0.17 : scale;
+      element.style.transform = `translate3d(${offset}px, 0, 0) scale(${size})`;
     });
     if (heroVisual) {
       heroVisual.style.transform = reduced ? '' : `translate3d(${Math.min(currentX, viewWidth) * 0.3}px, 0, 0)`;
@@ -208,7 +230,7 @@ function render() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight;
   header.style.setProperty('--read-progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
   header.classList.toggle('is-scrolled', window.scrollY > 40);
-  backToTop.hidden = window.scrollY < 500;
+  backToTop.classList.toggle('is-shown', window.scrollY >= 500);
 
   // 現在のセクションを、メニューとプログレスバーで示す
   let current = 'top';
@@ -288,6 +310,66 @@ window.addEventListener('resize', setupHorizontal);
 horizontalQuery.addEventListener('change', setupHorizontal);
 motionQuery.addEventListener('change', setupHorizontal);
 setupHorizontal();
+
+// ==========================================================
+// 決まり手の切り替え（タブ）
+// HTMLは用語の一覧のまま。JavaScriptが有効なときだけ、ボタンで1つずつ切り替える表示にする
+// ==========================================================
+document.querySelectorAll('.term-list--kimarite').forEach((list, listIndex) => {
+  const items = [...list.children];
+  const tablist = document.createElement('div');
+  tablist.className = 'kimarite-tabs';
+  tablist.setAttribute('role', 'tablist');
+  tablist.setAttribute('aria-label', '決まり手を選ぶ');
+
+  const tabs = items.map((item, i) => {
+    const term = item.querySelector('dt');
+    const tab = document.createElement('button');
+    const panelId = `kimarite-${listIndex}-${i}`;
+    tab.type = 'button';
+    tab.className = 'kimarite-tabs__tab';
+    tab.textContent = term.textContent;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', panelId);
+    item.id = panelId;
+    item.setAttribute('role', 'tabpanel');
+    item.setAttribute('aria-label', term.textContent);
+    tablist.append(tab);
+    return tab;
+  });
+
+  function select(index, moveFocus = false) {
+    tabs.forEach((tab, i) => {
+      const selected = i === index;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      items[i].hidden = !selected;
+    });
+    if (moveFocus) tabs[index].focus();
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(i));
+    // ←→キーで隣の決まり手へ（タブ操作の一般的なキーボード操作）
+    tab.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        select((i + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length, true);
+      }
+    });
+  });
+
+  list.classList.add('is-tabs');
+  list.before(tablist);
+  select(0);
+});
+
+// フッターの大きな文字を1字ずつに分け、順番に浮かび上がらせる
+document.querySelectorAll('.footer__mark').forEach((mark) => {
+  mark.innerHTML = [...mark.textContent].map((char, i) => (
+    `<span style="--i:${i}">${char === ' ' ? '&nbsp;' : char}</span>`
+  )).join('');
+});
 
 // 手動スライダー。自動再生せず、自分のペースで読めるようにする。
 const slider = document.querySelector('.experience');
