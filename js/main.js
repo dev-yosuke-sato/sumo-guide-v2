@@ -142,6 +142,7 @@ const backToTop = document.querySelector('.back-to-top');
 const sections = [...document.querySelectorAll('main > section[id]')];
 const currentLinks = document.querySelectorAll('.nav__link, .progress__link');
 const progressFill = document.querySelector('.progress__fill');
+const readProgress = document.querySelector('.header__progress');
 
 backToTop.hidden = false; // 以後は .is-shown で表示を切り替える（CSSでフェード）
 
@@ -149,6 +150,10 @@ let hscrollDistance = 0; // 横に動ける距離
 let currentX = 0;        // 今、画面に表示している横位置
 let sectionStarts = [];  // 各セクションの左端（横位置）
 let parallaxItems = [];  // 写真のパララックス（{ element, center }）
+let sectionTops = [];    // 縦スクロール時の各セクションの上端
+let scrollable = 0;      // ページ全体でスクロールできる量
+let headerHeight = 0;
+let currentId = '';      // 今「現在地」として表示しているセクション
 let jumpNextFrame = false;
 let frameRequested = false;
 
@@ -163,6 +168,7 @@ function getTargetX() {
 // 横に動ける距離や、各要素の位置を測り直す（読み込み時・画面サイズ変更時）
 function setupHorizontal() {
   root.classList.toggle('is-horizontal', horizontalQuery.matches);
+  headerHeight = header.offsetHeight;
   hscrollTrack.style.transform = '';
   parallaxItems.forEach(({ element }) => { element.style.transform = ''; });
   parallaxItems = [];
@@ -171,6 +177,7 @@ function setupHorizontal() {
     hscrollDistance = 0;
     currentX = 0;
     hscroll.style.removeProperty('--hscroll-height');
+    measurePage();
     requestFrame();
     return;
   }
@@ -193,8 +200,15 @@ function setupHorizontal() {
       factor: 0.25, range: Infinity, scale: 1, zoom: false,
     })),
   ];
+  measurePage();
   currentX = getTargetX();
   render();
+}
+
+// ページの高さと、縦スクロール時の各セクションの位置を測っておく
+function measurePage() {
+  scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  sectionTops = sections.map((section) => section.getBoundingClientRect().top + window.scrollY);
 }
 
 // 画面への反映（transform と opacity だけを変更し、レイアウトの再計算を起こさない）
@@ -226,24 +240,27 @@ function render() {
     heroVisual.style.transform = reduced ? '' : `translate3d(0, ${Math.min(window.scrollY, window.innerHeight) * 0.16}px, 0)`;
   }
 
-  // ヘッダー・読了バー・ページトップボタン
-  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-  header.style.setProperty('--read-progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
-  header.classList.toggle('is-scrolled', window.scrollY > 40);
-  backToTop.classList.toggle('is-shown', window.scrollY >= 500);
+  // ヘッダー・読了バー・ページトップボタン（値は事前に測ったものを使い、ここでは測らない）
+  const scrollY = window.scrollY;
+  readProgress.style.transform = `scaleX(${scrollable > 0 ? Math.min(1, scrollY / scrollable) : 0})`;
+  header.classList.toggle('is-scrolled', scrollY > 40);
+  backToTop.classList.toggle('is-shown', scrollY >= 500);
 
-  // 現在のセクションを、メニューとプログレスバーで示す
+  // 現在のセクションを、メニューとプログレスバーで示す（変わったときだけ書き換える）
   let current = 'top';
   sections.forEach((section, i) => {
     const reached = isHorizontal()
       ? sectionStarts[i] - currentX <= viewWidth * 0.4
-      : section.getBoundingClientRect().top <= header.offsetHeight + 100;
+      : sectionTops[i] - scrollY <= headerHeight + 100;
     if (reached) current = section.id;
   });
-  currentLinks.forEach((link) => {
-    if (link.hash === `#${current}`) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
-  });
+  if (current !== currentId) {
+    currentId = current;
+    currentLinks.forEach((link) => {
+      if (link.hash === `#${current}`) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }
 }
 
 // 1フレームごとに、表示位置を目標へ少しずつ近づける
@@ -306,6 +323,16 @@ document.addEventListener('focusin', (event) => {
 });
 
 window.addEventListener('scroll', requestFrame, { passive: true });
+
+// 画像の読み込みや決まり手の切り替えでページの高さが変わったら、縦スクロール時の位置を測り直す
+if ('ResizeObserver' in window) {
+  new ResizeObserver(() => {
+    if (!isHorizontal()) {
+      measurePage();
+      requestFrame();
+    }
+  }).observe(document.querySelector('main'));
+}
 window.addEventListener('resize', setupHorizontal);
 horizontalQuery.addEventListener('change', setupHorizontal);
 motionQuery.addEventListener('change', setupHorizontal);
