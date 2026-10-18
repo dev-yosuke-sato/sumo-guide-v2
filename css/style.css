@@ -3,13 +3,15 @@
    スマートフォンを基準にし、画面が広くなるほどレイアウトを広げます
    ========================================================== */
 
-/* ---------- 色・サイズの設定（ここを変えるとサイト全体に反映） ---------- */
+/* ---------- 色・サイズの設定（ここを変えるとサイト全体に反映） ----------
+   デザイン仕様書 Ver.2.2：メイン 墨黒／サブ 生成り／アクセント 金／文字色 濃いグレー */
 :root {
-  --color-black: #171717;
-  --color-gold: #c9a45c;
-  --color-white: #ffffff;
-  --color-gray: #f6f4ef;
-  --color-text: #171717;
+  --color-black: #171717;   /* メイン：墨黒 */
+  --color-kinari: #f7f4ee;  /* サブ：生成り（ページの地色） */
+  --color-gold: #c9a45c;    /* アクセント：金 */
+  --color-text: #333333;    /* 本文の文字色 */
+  --color-white: #ffffff;   /* 黒地の上の文字・カードの面 */
+  --color-surface: #ffffff; /* 生成りの上に置くカード・札の面 */
   --color-text-sub: #555555;
   --color-border: #e4ded0;
 
@@ -41,7 +43,7 @@ html {
 body {
   margin: 0;
   overflow-x: hidden; /* スマホでの横スクロールを防ぐ */
-  background-color: var(--color-white);
+  background-color: var(--color-kinari);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -62,6 +64,11 @@ a:focus-visible,
 button:focus-visible {
   outline: 3px solid var(--color-gold);
   outline-offset: 3px;
+}
+
+h2,
+h3 {
+  color: var(--color-black);
 }
 
 h1,
@@ -99,6 +106,8 @@ ol {
 
 /* ---------- ロゴ ---------- */
 .logo {
+  display: inline-block;
+  padding: 4px 0; /* 指で押しやすい高さ（44px以上）を確保 */
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: bold;
@@ -306,7 +315,7 @@ body.is-menu-open {
 }
 
 .section--gray {
-  background-color: var(--color-gray);
+  background-color: var(--color-surface);
 }
 
 .section--dark {
@@ -321,7 +330,7 @@ body.is-menu-open {
 
 .section-heading {
   margin-bottom: 48px;
-  text-align: center;
+  text-align: left; /* 仕様書：見出し・文章は左ぞろえが基本 */
 }
 
 .section-heading__en {
@@ -345,16 +354,15 @@ body.is-menu-open {
   content: "";
   position: absolute;
   bottom: 0;
-  left: 50%;
+  left: 0;
   width: 48px;
   height: 2px;
   background-color: var(--color-gold);
-  transform: translateX(-50%);
 }
 
 .section__intro {
   max-width: 760px;
-  margin: 0 auto 48px;
+  margin: 0 0 48px;
 }
 
 /* チェックマーク付きリスト */
@@ -392,7 +400,7 @@ body.is-menu-open {
   margin-top: 12px;
   padding: 0 16px;
   color: var(--color-text-sub);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .section--dark .photo figcaption {
@@ -419,7 +427,7 @@ body.is-menu-open {
 .about__culture {
   padding: 32px 24px;
   border-top: 3px solid var(--color-gold);
-  background-color: var(--color-gray);
+  background-color: var(--color-surface);
 }
 
 .about__culture-title {
@@ -438,7 +446,7 @@ body.is-menu-open {
 
 .card {
   padding: 32px 24px;
-  background-color: var(--color-white);
+  background-color: var(--color-kinari);
   border: 1px solid var(--color-border);
 }
 
@@ -476,7 +484,7 @@ body.is-menu-open {
 
 .term-list dd {
   color: var(--color-text-sub);
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 /* ==========================================================
@@ -496,7 +504,7 @@ body.is-menu-open {
   gap: 4px 16px;
   padding: 24px;
   border-left: 4px solid var(--color-black);
-  background-color: var(--color-gray);
+  background-color: var(--color-surface);
 }
 
 .ranking__item--top {
@@ -577,7 +585,6 @@ body.is-menu-open {
   border-top: 1px solid rgba(201, 164, 92, 0.4);
   background-color: var(--color-black);
   color: var(--color-white);
-  text-align: center;
 }
 
 .footer__inner {
@@ -588,15 +595,15 @@ body.is-menu-open {
 .footer__nav {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 24px;
-  margin: 24px 0;
+  gap: 0 28px;
+  margin: 16px 0;
 }
 
 .footer__nav a {
-  display: inline-block;
-  padding: 4px 0;
-  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px; /* 指で押しやすい高さ（44px以上） */
+  font-size: 0.9375rem;
   text-decoration: none;
 }
 
@@ -606,7 +613,7 @@ body.is-menu-open {
 
 .footer__note {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .footer__copy {
@@ -1015,7 +1022,7 @@ body.is-menu-open {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  width: 220px;
+  width: 240px;
   height: 100%;
   padding: 32px 22px;
   border-left: none;
@@ -1037,8 +1044,8 @@ body.is-menu-open {
   margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
-  font-size: 0.875rem;
-  line-height: 1.8;
+  font-size: 1rem;
+  line-height: 1.75;
   overflow-y: auto;
 }
 
@@ -1078,40 +1085,36 @@ body.is-menu-open {
 }
 
 /* 高さが低い画面（ノートPCなど）では、カードを横に広げ、用語を2列にして縦に収める */
-@media (max-height: 820px) {
+@media (max-height: 900px) {
   .is-horizontal .section {
     padding-top: calc(var(--header-height) + 28px);
     padding-bottom: 32px;
   }
 
   .is-horizontal .card {
-    width: 560px;
-    font-size: 0.875rem;
-    line-height: 1.75;
+    width: 640px;
+    line-height: 1.7;
   }
 
   .is-horizontal .card:first-child {
-    width: 400px;
+    width: 440px;
   }
 
   .is-horizontal .term-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-  }
-
-  .is-horizontal .term-list dd {
-    font-size: 0.8125rem;
+    column-gap: 24px;
   }
 
   .is-horizontal .note {
-    width: 460px;
-    font-size: 0.875rem;
+    width: 520px;
+    line-height: 1.75;
   }
 
   .is-horizontal .about__text,
   .is-horizontal .about__culture {
-    font-size: 0.9375rem;
+    width: 440px;
+    line-height: 1.8;
   }
 }
 
