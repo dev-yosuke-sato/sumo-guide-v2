@@ -1609,7 +1609,7 @@ body.is-menu-open {
 
 /* 塩まきの写真（画像が届いたら使う） */
 .is-horizontal .photo--shiomaki {
-  height: 72%;
+  height: 82%;
   align-self: center;
 }
 
@@ -1977,4 +1977,18 @@ html:not(.is-horizontal) .hero,
 html:not(.is-horizontal) .section,
 html:not(.is-horizontal) .footer {
   overflow-x: clip;
+}
+
+/* 塩まきの写真（縦長）：スマホ・タブレットでも縦長のまま見せ、塩の弧を切らない */
+.photo--shiomaki {
+  max-width: 520px;
+}
+
+.photo--shiomaki img {
+  aspect-ratio: 4 / 5;
+  object-position: center 30%;
+}
+
+.is-horizontal .photo--shiomaki {
+  max-width: none;
 }
