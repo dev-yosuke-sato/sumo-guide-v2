@@ -20,10 +20,30 @@
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:card" content="summary_large_image">
 
+  <!-- オープニング演出を出すかどうかを、画面が表示される前に決める（同じタブでは初回のみ。「動きを減らす」設定では出さない） -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add('js');
+      try {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('sumo-opening-seen')) {
+          root.classList.add('is-opening');
+        }
+      } catch (error) {
+        // 保存領域が使えない環境では、オープニングを出さずに進める
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/main.js" defer></script>
 </head>
 <body>
+  <!-- オープニング演出（黒い画面にロゴ）。クリック・キー操作・スクロールでスキップできる -->
+  <div class="opening" id="opening">
+    <p class="opening__logo" aria-hidden="true">SUMO <span class="logo__accent">GUIDE</span></p>
+    <button class="opening__skip" type="button">SKIP<span class="visually-hidden">（オープニングを飛ばす）</span></button>
+  </div>
+
   <a class="skip-link" href="#main">本文へスキップ</a>
 
   <!-- ===== HEADER ===== -->
@@ -64,7 +84,7 @@
       </div>
       <div class="hero__content">
         <p class="hero__lead">相撲初心者のためのガイド</p>
-        <h1 class="hero__title" id="hero-title">ぶつかる、一瞬。<br>心が震える。</h1>
+        <h1 class="hero__title" id="hero-title"><span class="hero__line"><span class="hero__line-inner">ぶつかる、一瞬。</span></span><span class="hero__line"><span class="hero__line-inner">心が震える。</span></span></h1>
         <p class="hero__text">ぶつかり合う力と技、受け継がれてきた伝統。<br>基本を知るだけで、観戦はもっと楽しくなります。</p>
         <a class="button" href="#about">相撲を知る</a>
       </div>
@@ -80,7 +100,7 @@
         </hgroup>
 
         <figure class="photo photo--about">
-          <img src="img/about-dohyoiri.webp" width="1400" height="934" loading="lazy" alt="満員の会場で、白い綱と金色の化粧まわしを着けた横綱が、両腕を大きく広げて土俵入りをしている。後ろには装束姿の付き人が控えている。">
+          <div class="photo__frame"><img src="img/about-dohyoiri.webp" width="1400" height="934" loading="lazy" alt="満員の会場で、白い綱と金色の化粧まわしを着けた横綱が、両腕を大きく広げて土俵入りをしている。後ろには装束姿の付き人が控えている。"></div>
           <figcaption>横綱の土俵入り（AI生成イメージ）</figcaption>
         </figure>
 
@@ -108,7 +128,7 @@
         </hgroup>
 
         <figure class="photo photo--rule">
-          <img src="img/rule-torikumi.webp" width="1400" height="934" loading="lazy" alt="土俵の上で2人の力士が組み合い、片方が相手を押し込んでいる。右側では行司が軍配を持って取組を見守っている。">
+          <div class="photo__frame"><img src="img/rule-torikumi.webp" width="1400" height="934" loading="lazy" alt="土俵の上で2人の力士が組み合い、片方が相手を押し込んでいる。右側では行司が軍配を持って取組を見守っている。"></div>
           <figcaption>土俵の上での取組。右側に立つのが、取組を進行する行司です（AI生成イメージ）</figcaption>
         </figure>
 
@@ -229,7 +249,7 @@
         </hgroup>
 
         <figure class="photo photo--experience">
-          <img src="img/experience-kokugikan.webp" width="1600" height="901" loading="lazy" alt="満員の観客席に囲まれた相撲会場。中央の土俵の上には、神社の屋根のような吊り屋根が下がっている。">
+          <div class="photo__frame"><img src="img/experience-kokugikan.webp" width="1600" height="901" loading="lazy" alt="満員の観客席に囲まれた相撲会場。中央の土俵の上には、神社の屋根のような吊り屋根が下がっている。"></div>
           <figcaption>満員の会場の熱気も、観戦の醍醐味です（AI生成イメージ）</figcaption>
         </figure>
 
@@ -290,6 +310,18 @@
       </div>
     </div>
   </div>
+  <!-- 横スクロール時に、今どのセクションにいるかを示す（PCのみ表示） -->
+  <nav class="progress" aria-label="セクションの進み具合">
+    <div class="progress__bar" aria-hidden="true"><span class="progress__fill"></span></div>
+    <ol class="progress__list">
+      <li><a class="progress__link" href="#top">はじめに</a></li>
+      <li><a class="progress__link" href="#about">相撲とは</a></li>
+      <li><a class="progress__link" href="#rule">基本ルール</a></li>
+      <li><a class="progress__link" href="#ranking">番付</a></li>
+      <li><a class="progress__link" href="#experience">観戦</a></li>
+    </ol>
+  </nav>
+
   <a class="back-to-top" href="#top" aria-label="ページの先頭へ戻る" hidden>↑</a>
 </body>
 </html>

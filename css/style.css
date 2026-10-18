@@ -749,7 +749,6 @@ body.is-menu-open {
   transform-origin: left;
 }
 .nav__link[aria-current="location"] { color: var(--color-gold); }
-.hero__visual { transform: translateY(var(--parallax, 0px)); }
 .back-to-top {
   position: fixed;
   right: 20px;
@@ -814,10 +813,6 @@ body.is-menu-open {
    縦にスクロールした量だけ、.hscroll__track を左へ動かす。
    スマホ（幅767px以下）や高さが足りない画面では、通常の縦スクロールのまま。
    ========================================================== */
-.scroll-hint {
-  display: none;
-}
-
 .is-horizontal .hscroll {
   position: relative;
   height: var(--hscroll-height, 100vh); /* 横に動く距離ぶん、縦の長さを確保する */
@@ -835,8 +830,7 @@ body.is-menu-open {
   display: flex;
   width: max-content;
   height: 100%;
-  transform: translate3d(calc(var(--hscroll-x, 0) * -1px), 0, 0);
-  will-change: transform;
+  will-change: transform; /* 移動量は main.js が transform を直接指定する */
 }
 
 .is-horizontal main {
@@ -892,12 +886,18 @@ body.is-menu-open {
   margin: 0;
 }
 
-.is-horizontal .photo img {
+/* 写真の枠。パララックスで画像を拡大・移動しても、枠の外にははみ出さない */
+.is-horizontal .photo__frame {
   flex: 1;
-  width: auto;
   min-height: 0;
+  overflow: hidden;
+}
+
+.is-horizontal .photo img {
+  width: auto;
   height: 100%;
   object-fit: cover;
+  will-change: transform;
 }
 
 .is-horizontal .photo--about img {
@@ -934,32 +934,6 @@ body.is-menu-open {
   width: 100vw;
   height: 100%;
   min-height: 0;
-}
-
-.is-horizontal .hero__visual {
-  transform: translate3d(var(--parallax-x, 0px), 0, 0);
-}
-
-.is-horizontal .scroll-hint {
-  position: absolute;
-  right: 48px;
-  bottom: 40px;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--color-gold);
-  font-family: var(--font-serif);
-  font-size: 0.8125rem;
-  letter-spacing: 0.35em;
-}
-
-/* 先へ進む方向（右側の内容が左へ流れてくる）を示す線 */
-.is-horizontal .scroll-hint::after {
-  content: "";
-  width: 96px;
-  height: 1px;
-  background: linear-gradient(to right, var(--color-gold), transparent);
 }
 
 /* ----- ABOUT ----- */
@@ -1118,13 +1092,333 @@ body.is-menu-open {
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .is-horizontal .scroll-hint::after {
-    animation: scroll-hint 2s ease-in-out infinite;
+
+/* ==========================================================
+   演出：オープニング・ファーストビュー（STEP 4）
+   --t は演出全体の速さ。スマホ・タブレットは短くして軽くする
+   ========================================================== */
+:root {
+  --t: 1;
+  --intro-delay: 0.2s; /* ファーストビューの演出が始まるまでの時間 */
+  --zoom-from: 1.08;   /* 画像のズーム開始倍率（解像度を考えて控えめにする） */
+}
+
+.is-opening {
+  --intro-delay: 1.7s; /* オープニングのロゴが消えるころに、画像を出し始める */
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --t: 0.7;
+    --zoom-from: 1.04;
   }
 
-  @keyframes scroll-hint {
-    0%, 100% { transform: scaleX(0.4); transform-origin: left; }
-    50% { transform: scaleX(1); transform-origin: left; }
+  .is-opening {
+    --intro-delay: 1.2s;
   }
+}
+
+/* 画面には見えないが、読み上げソフトには読まれる文字 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ----- オープニング ----- */
+.opening {
+  display: none;
+}
+
+.is-opening .opening {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-black);
+  animation: opening-out calc(var(--t) * 0.5s) ease calc(var(--t) * 1.9s) forwards;
+}
+
+.opening__logo {
+  position: relative;
+  padding-bottom: 20px;
+  color: var(--color-white);
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 5vw, 3.5rem);
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  animation:
+    opening-logo-in calc(var(--t) * 0.9s) cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--t) * 0.3s) both,
+    opening-logo-out calc(var(--t) * 0.5s) ease calc(var(--t) * 1.4s) forwards;
+}
+
+/* ロゴの下に伸びる金の線 */
+.opening__logo::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-gold);
+  transform: scaleX(0);
+  animation: line-grow calc(var(--t) * 0.8s) cubic-bezier(0.6, 0, 0.2, 1) calc(var(--t) * 0.6s) forwards;
+}
+
+.opening__skip {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  min-width: 88px;
+  min-height: 44px;
+  border: 1px solid rgba(201, 164, 92, 0.6);
+  background: transparent;
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  letter-spacing: 0.25em;
+  cursor: pointer;
+}
+
+.opening__skip:hover {
+  background-color: var(--color-gold);
+  color: var(--color-black);
+}
+
+/* スキップしたときは、すぐに幕を下ろす */
+.is-opening-done .opening {
+  animation: opening-out 0.3s ease forwards;
+}
+
+@keyframes opening-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes opening-logo-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); letter-spacing: 0.6em; }
+  to { opacity: 1; transform: none; letter-spacing: 0.3em; }
+}
+
+@keyframes opening-logo-out {
+  to { opacity: 0; transform: scale(1.04); }
+}
+
+@keyframes line-grow {
+  to { transform: scaleX(1); }
+}
+
+/* ----- キャッチコピーは1行ずつ（行ごとの枠の下から文字がせり上がる） ----- */
+.hero__line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero__line-inner {
+  display: block;
+}
+
+/* ----- スクロールの案内 ----- */
+.scroll-hint {
+  position: absolute;
+  right: 16px;
+  bottom: 20px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  writing-mode: vertical-rl; /* スマホでは縦書きで「下へ」を示す */
+}
+
+.scroll-hint::after {
+  content: "";
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+}
+
+.is-horizontal .scroll-hint {
+  right: 48px;
+  bottom: 88px;
+  flex-direction: row;
+  gap: 16px;
+  font-size: 0.8125rem;
+  writing-mode: horizontal-tb; /* PCでは横書きで「右の内容が流れてくる」ことを示す */
+}
+
+.is-horizontal .scroll-hint::after {
+  width: 96px;
+  height: 1px;
+  background: linear-gradient(to right, var(--color-gold), transparent);
+}
+
+/* ----- ファーストビューの登場演出（JSが有効で「動きを減らす」設定がオフのとき） ----- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero__image {
+    animation: hero-image-in calc(var(--t) * 2.6s) cubic-bezier(0.2, 0.7, 0.2, 1) var(--intro-delay) both;
+  }
+
+  .js .hero__lead {
+    animation: fade-up calc(var(--t) * 0.8s) ease calc(var(--intro-delay) + var(--t) * 0.5s) both;
+  }
+
+  .js .hero__line-inner {
+    animation: line-rise calc(var(--t) * 0.9s) cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--intro-delay) + var(--t) * 0.7s) both;
+  }
+
+  .js .hero__line + .hero__line .hero__line-inner {
+    animation-delay: calc(var(--intro-delay) + var(--t) * 1.15s);
+  }
+
+  .js .hero__text {
+    animation: fade-up calc(var(--t) * 0.8s) ease calc(var(--intro-delay) + var(--t) * 1.6s) both;
+  }
+
+  .js .hero__content .button {
+    animation: fade-up calc(var(--t) * 0.8s) ease calc(var(--intro-delay) + var(--t) * 1.8s) both;
+  }
+
+  .js .scroll-hint {
+    animation: fade-in calc(var(--t) * 0.8s) ease calc(var(--intro-delay) + var(--t) * 2.2s) both;
+  }
+
+  /* 案内の線は、先へ進む方向へくり返し流れる */
+  .scroll-hint::after {
+    animation: hint-flow-y 2s ease-in-out infinite;
+  }
+
+  .is-horizontal .scroll-hint::after {
+    animation-name: hint-flow-x;
+  }
+}
+
+@keyframes hero-image-in {
+  from { opacity: 0; transform: scale(var(--zoom-from)); }
+  30% { opacity: 1; }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes line-rise {
+  from { transform: translateY(105%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hint-flow-y {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  50.1% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+@keyframes hint-flow-x {
+  0% { transform: scaleX(0); transform-origin: left; }
+  50% { transform: scaleX(1); transform-origin: left; }
+  50.1% { transform-origin: right; }
+  100% { transform: scaleX(0); transform-origin: right; }
+}
+
+/* ==========================================================
+   プログレスバー（PCの横スクロール時だけ表示）
+   金の線が進み具合、5つの見出しが現在地を示す。押すとそのセクションへ移動
+   ========================================================== */
+.progress {
+  display: none;
+}
+
+.is-horizontal .progress {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  z-index: 90;
+  display: block;
+  width: min(600px, 56vw);
+  padding: 6px 24px 10px;
+  border: 1px solid rgba(201, 164, 92, 0.35);
+  background-color: rgba(23, 23, 23, 0.85);
+  transform: translateX(-50%);
+}
+
+.progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(201, 164, 92, 0.2);
+}
+
+.progress__fill {
+  display: block;
+  height: 100%;
+  background-color: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.progress__list {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+/* 見出しの前の小さな菱形。現在地では金色で大きくなる */
+.progress__link::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.progress__link:hover,
+.progress__link[aria-current="location"] {
+  color: var(--color-gold);
+}
+
+.progress__link[aria-current="location"]::before {
+  background-color: var(--color-gold);
+  transform: rotate(45deg) scale(1.4);
+}
+
+/* 横スクロール時は、ヘッダー下の読了バーをプログレスバーに任せる */
+.is-horizontal .header::after {
+  display: none;
+}
+
+/* プログレスバーの分、各パネルの下に余白を取る */
+.is-horizontal .section,
+.is-horizontal .footer {
+  padding-bottom: 80px;
 }

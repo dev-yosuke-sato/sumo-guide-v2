@@ -59,10 +59,54 @@ pcQuery.addEventListener('change', (event) => {
   }
 });
 
-// 画面に入った要素を、一度だけ順に表示する。
+// ==========================================================
+// オープニング演出
+// 表示するかどうかは index.html の先頭で決めている（html に .is-opening が付く）。
+// スキップボタン・クリック・キー操作・ホイール・タッチのどれでもすぐ終わる。
+// ==========================================================
+const root = document.documentElement;
 const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const opening = document.getElementById('opening');
+
+function rememberOpening() {
+  try {
+    sessionStorage.setItem('sumo-opening-seen', '1');
+  } catch (error) {
+    // 保存できなくても動作には影響しない
+  }
+}
+
+if (root.classList.contains('is-opening')) {
+  const timeScale = parseFloat(getComputedStyle(root).getPropertyValue('--t')) || 1;
+  const skipEvents = ['click', 'keydown', 'wheel', 'touchstart'];
+
+  const finishOpening = () => {
+    opening.hidden = true;
+    skipEvents.forEach((type) => window.removeEventListener(type, skipOpening));
+  };
+
+  // スキップ：幕をすぐ下ろし、ファーストビューの演出も待ち時間なしで始める
+  function skipOpening() {
+    if (opening.hidden) return;
+    root.classList.add('is-opening-done');
+    root.style.setProperty('--intro-delay', '0s');
+    rememberOpening();
+    window.setTimeout(finishOpening, 300);
+  }
+
+  skipEvents.forEach((type) => window.addEventListener(type, skipOpening, { passive: true }));
+  window.setTimeout(() => {
+    rememberOpening();
+    finishOpening();
+  }, timeScale * 2400);
+}
+
+// ==========================================================
+// 画面に入った要素を、一度だけ順に表示する
+// （ファーストビューは上のオープニング演出で表示するので対象外）
+// ==========================================================
 const revealTargets = document.querySelectorAll(
-  '.hero__content > *, .section-heading, .photo, .about > *, .card, .section__intro, .ranking__item, .note'
+  '.section-heading, .photo, .about > *, .card, .section__intro, .ranking__item, .note'
 );
 if ('IntersectionObserver' in window) {
   const revealObserver = new IntersectionObserver((entries) => {
@@ -82,35 +126,124 @@ if ('IntersectionObserver' in window) {
 }
 
 // ==========================================================
-// 横スクロール（PC・タブレット）
-// 縦にスクロールした量だけ、ページの中身を左へ動かす。
-// ホイール・トラックパッド・キーボード（↓、Space、PageDown）は、ブラウザ本来の縦スクロールをそのまま使う。
+// 横スクロール（PCのみ）
+// 縦にスクロールした量を「目標の横位置」とし、画面の動きは少し遅れて追いつかせる（慣性）。
+// ホイール・トラックパッド・キーボードは、ブラウザ本来の縦スクロールをそのまま使う。
+// タブレット・スマホ（指で操作する端末）は縦スクロールのまま。
 // ==========================================================
-const horizontalQuery = window.matchMedia('(min-width: 768px) and (min-height: 600px)');
+const horizontalQuery = window.matchMedia('(min-width: 1024px) and (min-height: 600px) and (hover: hover) and (pointer: fine)');
 const hscroll = document.querySelector('.hscroll');
 const hscrollTrack = document.querySelector('.hscroll__track');
-let hscrollDistance = 0;
+const header = document.querySelector('.header');
+const heroVisual = document.querySelector('.hero__visual');
+const backToTop = document.querySelector('.back-to-top');
+const sections = [...document.querySelectorAll('main > section[id]')];
+const currentLinks = document.querySelectorAll('.nav__link, .progress__link');
+const progressFill = document.querySelector('.progress__fill');
+
+let hscrollDistance = 0; // 横に動ける距離
+let currentX = 0;        // 今、画面に表示している横位置
+let sectionStarts = [];  // 各セクションの左端（横位置）
+let parallaxItems = [];  // 写真のパララックス（{ element, center }）
+let jumpNextFrame = false;
+let frameRequested = false;
 
 function isHorizontal() {
-  return document.documentElement.classList.contains('is-horizontal');
+  return root.classList.contains('is-horizontal');
 }
 
-// 横に動ける距離を測り、その分だけ縦の長さを確保する
-function setupHorizontal() {
-  document.documentElement.classList.toggle('is-horizontal', horizontalQuery.matches);
-  if (isHorizontal()) {
-    hscrollDistance = Math.max(0, hscrollTrack.scrollWidth - window.innerWidth);
-    hscroll.style.setProperty('--hscroll-height', `${hscrollDistance + window.innerHeight}px`);
-  } else {
-    hscrollDistance = 0;
-    hscroll.style.removeProperty('--hscroll-height');
-    hscrollTrack.style.removeProperty('--hscroll-x');
-  }
-}
-
-// 今、横に何px動いているか
-function getHorizontalX() {
+function getTargetX() {
   return Math.min(hscrollDistance, Math.max(0, window.scrollY - hscroll.offsetTop));
+}
+
+// 横に動ける距離や、各要素の位置を測り直す（読み込み時・画面サイズ変更時）
+function setupHorizontal() {
+  root.classList.toggle('is-horizontal', horizontalQuery.matches);
+  hscrollTrack.style.transform = '';
+  parallaxItems.forEach(({ element }) => { element.style.transform = ''; });
+  parallaxItems = [];
+
+  if (!isHorizontal()) {
+    hscrollDistance = 0;
+    currentX = 0;
+    hscroll.style.removeProperty('--hscroll-height');
+    requestFrame();
+    return;
+  }
+
+  hscrollDistance = Math.max(0, hscrollTrack.scrollWidth - window.innerWidth);
+  hscroll.style.setProperty('--hscroll-height', `${hscrollDistance + window.innerHeight}px`);
+  // transform を外した状態で測るので、getBoundingClientRect の値がそのまま横位置になる
+  sectionStarts = sections.map((section) => section.getBoundingClientRect().left);
+  parallaxItems = [...document.querySelectorAll('.photo img')].map((element) => {
+    const rect = element.getBoundingClientRect();
+    return { element, center: rect.left + rect.width / 2, range: rect.width * 0.06 };
+  });
+  currentX = getTargetX();
+  render();
+}
+
+// 画面への反映（transform と opacity だけを変更し、レイアウトの再計算を起こさない）
+function render() {
+  const viewWidth = window.innerWidth;
+  const reduced = motionQuery.matches;
+
+  if (isHorizontal()) {
+    hscrollTrack.style.transform = `translate3d(${-currentX}px, 0, 0)`;
+    // 写真は文字よりゆっくり動かし、奥行きを出す（拡大しておき、端が見えないよう動きの幅を制限）
+    parallaxItems.forEach(({ element, center, range }) => {
+      const offset = reduced ? 0 : Math.max(-range, Math.min(range, (center - currentX - viewWidth / 2) * -0.08));
+      element.style.transform = reduced ? '' : `translate3d(${offset}px, 0, 0) scale(1.14)`;
+    });
+    if (heroVisual) {
+      heroVisual.style.transform = reduced ? '' : `translate3d(${Math.min(currentX, viewWidth) * 0.3}px, 0, 0)`;
+    }
+    progressFill.style.transform = `scaleX(${hscrollDistance > 0 ? currentX / hscrollDistance : 0})`;
+  } else if (heroVisual) {
+    // スマホ・タブレットは軽いパララックスだけ
+    heroVisual.style.transform = reduced ? '' : `translate3d(0, ${Math.min(window.scrollY, window.innerHeight) * 0.16}px, 0)`;
+  }
+
+  // ヘッダー・読了バー・ページトップボタン
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  header.style.setProperty('--read-progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
+  header.classList.toggle('is-scrolled', window.scrollY > 40);
+  backToTop.hidden = window.scrollY < 500;
+
+  // 現在のセクションを、メニューとプログレスバーで示す
+  let current = 'top';
+  sections.forEach((section, i) => {
+    const reached = isHorizontal()
+      ? sectionStarts[i] - currentX <= viewWidth * 0.4
+      : section.getBoundingClientRect().top <= header.offsetHeight + 100;
+    if (reached) current = section.id;
+  });
+  currentLinks.forEach((link) => {
+    if (link.hash === `#${current}`) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}
+
+// 1フレームごとに、表示位置を目標へ少しずつ近づける
+function frame() {
+  frameRequested = false;
+  const targetX = isHorizontal() ? getTargetX() : 0;
+  if (jumpNextFrame || motionQuery.matches || !isHorizontal()) {
+    currentX = targetX;
+    jumpNextFrame = false;
+  } else {
+    currentX += (targetX - currentX) * 0.14;
+    if (Math.abs(targetX - currentX) < 0.5) currentX = targetX;
+  }
+  render();
+  if (currentX !== targetX) requestFrame();
+}
+
+function requestFrame() {
+  if (!frameRequested) {
+    frameRequested = true;
+    requestAnimationFrame(frame);
+  }
 }
 
 // 要素の位置まで移動する（横スクロール時は、横の位置を縦のスクロール量に置き換える）
@@ -121,11 +254,11 @@ function scrollToElement(target, smooth = true) {
     target.scrollIntoView({ behavior });
     return;
   }
-  const x = target.getBoundingClientRect().left + getHorizontalX();
+  const x = target.getBoundingClientRect().left + currentX;
   window.scrollTo({ top: hscroll.offsetTop + Math.min(x, hscrollDistance), behavior });
 }
 
-// ページ内リンク（メニュー、ボタン、ページトップ）
+// ページ内リンク（メニュー、ボタン、プログレスバー、ページトップ）
 document.querySelectorAll('a[href^="#"]').forEach((link) => {
   link.addEventListener('click', (event) => {
     const target = document.querySelector(link.hash);
@@ -138,63 +271,23 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
   });
 });
 
-// Tabキーで画面外の要素にフォーカスが移ったら、その位置まで横に移動する
+// Tabキーで画面外の要素にフォーカスが移ったら、その位置まですぐに横移動する
 document.addEventListener('focusin', (event) => {
   if (!isHorizontal() || !hscrollTrack.contains(event.target)) return;
   const rect = event.target.getBoundingClientRect();
   if (rect.left < 0 || rect.right > window.innerWidth) {
-    window.scrollTo({ top: window.scrollY + rect.left - 120, behavior: 'instant' });
+    const x = rect.left + currentX - 120;
+    window.scrollTo({ top: hscroll.offsetTop + Math.max(0, Math.min(x, hscrollDistance)), behavior: 'instant' });
+    jumpNextFrame = true;
+    requestFrame();
   }
 });
 
-window.addEventListener('resize', () => {
-  setupHorizontal();
-  requestScrollUpdate();
-});
-horizontalQuery.addEventListener('change', () => {
-  setupHorizontal();
-  requestScrollUpdate();
-});
+window.addEventListener('scroll', requestFrame, { passive: true });
+window.addEventListener('resize', setupHorizontal);
+horizontalQuery.addEventListener('change', setupHorizontal);
+motionQuery.addEventListener('change', setupHorizontal);
 setupHorizontal();
-
-// 読了バー、ヘッダー、現在地ナビを1フレームにまとめて更新する。
-const header = document.querySelector('.header');
-const heroVisual = document.querySelector('.hero__visual');
-const backToTop = document.querySelector('.back-to-top');
-const sections = [...document.querySelectorAll('main > section[id]')];
-let scrollPending = false;
-function updateScroll() {
-  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-  header.style.setProperty('--read-progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
-  header.classList.toggle('is-scrolled', window.scrollY > 40);
-  backToTop.hidden = window.scrollY < 500;
-  const x = isHorizontal() ? getHorizontalX() : 0;
-  hscrollTrack.style.setProperty('--hscroll-x', x);
-  if (heroVisual) {
-    const parallax = motionQuery.matches ? 0 : Math.min(window.scrollY, window.innerHeight) * 0.16;
-    heroVisual.style.setProperty('--parallax', isHorizontal() ? '0px' : `${parallax}px`);
-    heroVisual.style.setProperty('--parallax-x', motionQuery.matches ? '0px' : `${Math.min(x, window.innerWidth) * 0.3}px`);
-  }
-  let current = 'top';
-  sections.forEach((section) => {
-    const rect = section.getBoundingClientRect();
-    if (isHorizontal() ? rect.left <= window.innerWidth * 0.4 : rect.top <= header.offsetHeight + 100) current = section.id;
-  });
-  navLinks.forEach((link) => {
-    if (link.hash === `#${current}`) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
-  });
-  scrollPending = false;
-}
-function requestScrollUpdate() {
-  if (!scrollPending) {
-    scrollPending = true;
-    requestAnimationFrame(updateScroll);
-  }
-}
-window.addEventListener('scroll', requestScrollUpdate, { passive: true });
-motionQuery.addEventListener('change', requestScrollUpdate);
-updateScroll();
 
 // 手動スライダー。自動再生せず、自分のペースで読めるようにする。
 const slider = document.querySelector('.experience');
@@ -241,6 +334,9 @@ showSlide(0);
 window.addEventListener('load', () => {
   setupHorizontal();
   const target = location.hash && document.querySelector(location.hash);
-  if (target && isHorizontal()) scrollToElement(target, false);
-  requestScrollUpdate();
+  if (target && isHorizontal()) {
+    scrollToElement(target, false);
+    jumpNextFrame = true;
+  }
+  requestFrame();
 });
